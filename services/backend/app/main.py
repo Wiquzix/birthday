@@ -191,7 +191,7 @@ async def share_data(share_data: ShareDataRequest):
         )
         
         # Отправляем событие в Kafka
-        success = await send_telegram_message_event(message_data.model_dump())
+        success = await send_telegram_message_event(message_data.dict())
         if not success:
             logger.warning(f"Не удалось отправить сообщение пользователю {share_data.chatId}")
         
