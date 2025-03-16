@@ -4,6 +4,7 @@ from redis.asyncio import Redis
 from typing import Optional, Any, List, Dict, Union, Set
 import logging
 from utils.config import REDIS_URL
+from utils.redis_utils import get_redis
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ async def get_redis_info() -> Dict[str, Any]:
     :return: Словарь с информацией о Redis
     """
     try:
+        redis = await get_redis()
         info = await redis.info()
         return info
     except Exception as e:
@@ -41,6 +43,7 @@ async def get_redis_stats() -> Dict[str, Any]:
     :return: Словарь со статистикой
     """
     try:
+        redis = await get_redis()
         info = await redis.info()
         stats = {
             "used_memory": info.get("used_memory_human", "N/A"),
@@ -75,6 +78,7 @@ async def acquire_lock(lock_name: str, owner: str, ttl: int = DEFAULT_LOCK_TTL) 
     """
     lock_key = f"{LOCK_PREFIX}{lock_name}"
     try:
+        redis = await get_redis()
         # Пытаемся установить блокировку, только если она еще не существует
         result = await redis.set(lock_key, owner, nx=True, ex=ttl)
         return result is not None
@@ -91,6 +95,7 @@ async def release_lock(lock_name: str, owner: str) -> bool:
     """
     lock_key = f"{LOCK_PREFIX}{lock_name}"
     try:
+        redis = await get_redis()
         # Проверяем, что блокировка принадлежит указанному владельцу
         current_owner = await redis.get(lock_key)
         if current_owner != owner:
@@ -113,6 +118,7 @@ async def rate_limit_check(key: str, limit: int, period: int = DEFAULT_RATE_LIMI
     """
     rate_key = f"{RATE_LIMIT_PREFIX}{key}"
     try:
+        redis = await get_redis()
         # Получаем текущее количество запросов
         count = await redis.get(rate_key)
         
@@ -143,6 +149,7 @@ async def increment_counter(key: str, amount: int = 1) -> int:
     """
     counter_key = f"{COUNTER_PREFIX}{key}"
     try:
+        redis = await get_redis()
         # Увеличиваем счетчик и возвращаем новое значение
         return await redis.incrby(counter_key, amount)
     except Exception as e:
@@ -157,6 +164,7 @@ async def get_counter(key: str) -> int:
     """
     counter_key = f"{COUNTER_PREFIX}{key}"
     try:
+        redis = await get_redis()
         value = await redis.get(counter_key)
         return int(value) if value else 0
     except Exception as e:
@@ -173,6 +181,7 @@ async def set_session_data(session_id: str, data: Dict[str, Any], ttl: int = DEF
     """
     session_key = f"{SESSION_PREFIX}{session_id}"
     try:
+        redis = await get_redis()
         await redis.set(session_key, json.dumps(data), ex=ttl)
         return True
     except Exception as e:
@@ -187,6 +196,7 @@ async def get_session_data(session_id: str) -> Optional[Dict[str, Any]]:
     """
     session_key = f"{SESSION_PREFIX}{session_id}"
     try:
+        redis = await get_redis()
         data = await redis.get(session_key)
         return json.loads(data) if data else None
     except Exception as e:
@@ -212,6 +222,7 @@ async def update_session_data(session_id: str, data: Dict[str, Any], ttl: int = 
         current_data.update(data)
         
         # Сохраняем обновленные данные
+        redis = await get_redis()
         await redis.set(session_key, json.dumps(current_data), ex=ttl)
         return True
     except Exception as e:
@@ -226,6 +237,7 @@ async def delete_session(session_id: str) -> bool:
     """
     session_key = f"{SESSION_PREFIX}{session_id}"
     try:
+        redis = await get_redis()
         await redis.delete(session_key)
         return True
     except Exception as e:

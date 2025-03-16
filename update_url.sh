@@ -69,16 +69,12 @@ update_botfather() {
 restart_containers() {
     local tunnel_url=$1
     
-    # Спрашиваем пользователя, хочет ли он перезапустить контейнеры
-    read -p "Хотите перезапустить контейнеры? (y/n): " restart_choice
-    if [[ $restart_choice == "y" ]]; then
-        echo "Перезапуск контейнеров..."
-        docker-compose down
-        docker-compose up -d
-        echo "Контейнеры перезапущены с новым URL: $tunnel_url"
-    else
-        echo "Не забудьте перезапустить контейнеры вручную для применения нового URL."
-    fi
+
+    echo "Перезапуск контейнеров..."
+    docker-compose down
+    docker-compose up -d
+    echo "Контейнеры перезапущены с новым URL: $tunnel_url"
+
 }
 
 # Очищаем старый лог

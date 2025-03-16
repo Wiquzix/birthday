@@ -110,7 +110,11 @@ export default {
       // Если найден shareId, загружаем данные
       if (shareId) {
         try {
-          const response = await fetch(`${process.env.VUE_APP_API_URL}/share/${shareId}`);
+          // Получаем базовый URL для API
+          const apiUrl = window.location.origin + '/api';
+          console.log('URL API для загрузки данных:', apiUrl);
+          
+          const response = await fetch(`${apiUrl}/share/${shareId}`);
           if (!response.ok) {
             throw new Error('Не удалось загрузить данные');
           }

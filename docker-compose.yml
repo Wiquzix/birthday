@@ -31,9 +31,14 @@ services:
       - EXTERNAL_URL=${EXTERNAL_URL}
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     depends_on:
-      - db
-      - redis
-      - kafka
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      zookeeper:
+        condition: service_healthy
     restart: always
 
   bot:
@@ -87,6 +92,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: always
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest

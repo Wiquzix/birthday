@@ -94,6 +94,15 @@ async def shutdown_event():
     await kafka_client.stop()
     logger.info("Kafka client stopped")
 
+@app.get("/api/")
+async def root():
+    """Проверка работоспособности API"""
+    return {
+        "status": "ok",
+        "message": "API работает",
+        "version": "1.0.0"
+    }
+
 @app.post("/api/share", response_model=ShareResponse)
 async def share_data(share_data: ShareDataRequest):
     """Обработка запроса на сохранение данных для шаринга"""
@@ -239,7 +248,7 @@ async def get_shared_data(share_id: str):
     )
     
     # Сохраняем в кэш
-    await set_cache(cache_key, response_data.model_dump(), 3600)
+    await set_cache(cache_key, response_data.dict(), 3600)
     
     return response_data
 
@@ -271,7 +280,7 @@ async def get_user_data(user_id: str):
     )
     
     # Кэшируем данные
-    await set_cache(cache_key, response_data.model_dump())
+    await set_cache(cache_key, response_data.dict())
     
     return response_data
 
